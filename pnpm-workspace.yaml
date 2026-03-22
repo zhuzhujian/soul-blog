@@ -1,0 +1,3 @@
+packages:
+  - 'soul-blog-admin'
+  - 'soul-blog-server'

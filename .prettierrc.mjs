@@ -1,0 +1,8 @@
+const config = {
+  printWidth: 90,
+  tabWidth: 4,
+  useTabs: true,
+  semi: false,
+  singleQuote: true,
+  bracketSpacing: true,
+};

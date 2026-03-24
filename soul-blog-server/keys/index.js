@@ -6,7 +6,7 @@ const path = require('node:path')
 const createKey = () => {
   // 生成RSA密钥对
   const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-    modulesLength: 2048
+    modulusLength: 2048
   })
 
   // 导出密钥对为pem格式
@@ -59,7 +59,7 @@ function getPrivateKeyPem() {
 
 function setPrivateKeyPem(priKey) {
   const filePath = path.join(__dirname, 'private.pem')
-  fs.writeFileSync(filePath, pubKey)
+  fs.writeFileSync(filePath, priKey)
 }
 
 function privateDecrypto(encrypto) {

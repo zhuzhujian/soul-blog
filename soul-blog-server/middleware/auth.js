@@ -16,7 +16,7 @@ function generateToken(user) {
 }
 
 function authenticateToken(req, res, next) {
-  if (["/login", "getPubKye"].includes(req.url)) {
+  if (["/login", "/getPubKye"].includes(req.url)) {
     // 登录及获取密钥的时候不校验token
     next();
   }

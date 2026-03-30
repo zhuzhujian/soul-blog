@@ -16,10 +16,12 @@ function generateToken(user) {
 }
 
 function authenticateToken(req, res, next) {
-  if (["/login", "/getPubKye"].includes(req.url)) {
+  console.log(req.url)
+  if (["/v1/login", "/v1/getPubKey"].includes(req.url)) {
     // 登录及获取密钥的时候不校验token
     next();
   }
+
   const authHeader = req.headers["authorization"];
   if (authHeader) {
     const token = authHeader.split(" ")[1]; // 获取Bearer后面的token值

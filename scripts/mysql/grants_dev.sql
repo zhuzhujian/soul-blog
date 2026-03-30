@@ -1,0 +1,1 @@
+GRANT ALL PRIVILEGES ON `soul_blog`.* TO `better-auth`@`%` WITH GRANT OPTION;

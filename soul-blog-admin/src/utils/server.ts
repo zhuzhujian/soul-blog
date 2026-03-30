@@ -4,8 +4,9 @@ class ServerInstance {
   private server: AxiosInstance;
 
   constructor() {
+    console.log(import.meta.env.SERVICE_BASE_URL)
     this.server = axios.create({
-      baseURL: process.env.SERVICE_BASE_URL,
+      // baseURL: '',
       timeout: 10000,
       withCredentials: true,  // 跨域请求是否需要带上凭证
     })
@@ -28,7 +29,7 @@ class ServerInstance {
     
   }
 
-  get: <T, U>(url: string, params:U) => Promise<T> = (url, params) => {
+  get: <T, U>(url: string, params?:U) => Promise<T> = (url, params) => {
     return this.server.get(url, { params })
   };
 
@@ -36,7 +37,7 @@ class ServerInstance {
     return this.server.post(url, data, config)
   };
 
-  download: <T>(url: string, params:T) => Promise<Blob> = (url, params) => {
+  download: <T>(url: string, params?:T) => Promise<Blob> = (url, params) => {
     return this.server.get(url, {
       params,
       responseType: 'blob',

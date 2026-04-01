@@ -19,7 +19,7 @@ function authenticateToken(req, res, next) {
   console.log(req.url)
   if (["/v1/login", "/v1/getPubKey"].includes(req.url)) {
     // 登录及获取密钥的时候不校验token
-    next();
+    return next();
   }
 
   const authHeader = req.headers["authorization"];

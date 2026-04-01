@@ -6,30 +6,37 @@ const path = require('node:path')
 const createKey = () => {
   // 生成RSA密钥对
   const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-    modulusLength: 2048
+    modulusLength: 2048,
+    publicKeyEncoding:  {
+      type: 'spki',
+      format: 'pem'
+    },
+    privateKeyEncoding: {
+      type: 'pkcs8',
+      format: 'pem'
+    }
   })
 
   // 导出密钥对为pem格式
-  const publicKeyPem = publicKey.export({ type: 'pkcs1', format: 'pem' }).toString()
-  const privateKeyPem = privateKey.export({ type: 'pkcs1', format: 'pem'}).toString()
+  // const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' }).toString()
+  // const privateKeyPem = privateKey.export({ type: 'pkcs8', format: 'pem'}).toString()
   return {
-    publicKeyPem,
-    privateKeyPem
+    publicKey,
+    privateKey
   }
 }
 
 function getPubKeyPem() {
   try {
-    console.log(__dirname)
     const filePath = path.join(__dirname, 'public.pem')
     const publickKey = fs.readFileSync(filePath, { encoding: 'utf-8'})
+    const { publicKeyPem, privateKeyPem } = createKey()
     if(!publickKey) {
-      const { publicKeyPem, privateKeyPem } = createKey()
       setPubKeyPem(publicKeyPem)
       setPrivateKeyPem(privateKeyPem)
       return publicKeyPem
     }
-    return publickKey
+    return publicKeyPem
   } catch(e) {
     throw(e)
   }
@@ -42,9 +49,11 @@ function setPubKeyPem(pubKey) {
 
 function getPrivateKeyPem() {
   try {
-    console.log(__dirname)
     const filePath = path.join(__dirname, 'private.pem')
-    const privateKey = fs.readFileSync(filePath, { encoding: 'utf-8'})
+    let privateKey; 
+    if(fs.existsSync(filePath)) {
+      privateKey = fs.readFileSync(filePath, { encoding: 'utf-8'})
+    }
     if(!privateKey) {
       const { publicKeyPem, privateKeyPem } = createKey()
       setPubKeyPem(publicKeyPem)
@@ -69,7 +78,8 @@ function privateDecrypto(encrypto) {
   // decrypto
   const decryptedBuffer = crypto.privateDecrypt({
     key: privateKey,
-    padding: crypto.constants.RSA_PKCS1_PADDING
+    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+    oaepHash: 'sha256'
   },encryptedData)
   return JSON.parse(decryptedBuffer.toString('utf-8'))
 }

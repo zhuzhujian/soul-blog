@@ -21,6 +21,7 @@ const router = createRouter({
 });
 
 export const setupRouter = (app:App<Element>) => {
-  setupRouterGuard(router)
-  app.use(router)
+  setupRouterGuard(router);
+  window.$router = router; // router实例需要在注册后才能使用
+  app.use(router);
 }

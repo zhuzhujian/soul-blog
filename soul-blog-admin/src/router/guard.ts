@@ -5,7 +5,7 @@ export function setupRouterGuard(router:Router) {
 }
 
 function createPermissionGuard(router:Router) {
-  router.beforeEach(async (to:any) => {
+  router.beforeEach(async (to:any, from:any) => {
     if(['/login', '/404'].includes(to.path)) {
       return true
     }
@@ -13,7 +13,7 @@ function createPermissionGuard(router:Router) {
     // 有 Token 的时候无需访问登录页面
     if (to.name === 'Login') {
       window.$message.success('已登录，无需重复登录！')
-      return { path: '/' }
+      return { path: from.fullPath || '/home' }
     }
 
     // 能在路由中找到, 则正常访问

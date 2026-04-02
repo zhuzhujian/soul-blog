@@ -1,42 +1,48 @@
 const express = require('express')
 const { generateToken } = require('../middleware/auth')
-const { privateDecrypto, getPubKeyPem } = require('../keys')
+const { decrypt, getPublicKeyPem } = require('../utils/auth')
 
 const router = express.Router()
 
 router.get('/getPubKey', (req, res) => {
-  // res.set('Content-Type', 'application/x-pem-file');
-  const pub_key = getPubKeyPem();
-  console.log(res, pub_key)
-  // res.status(500)
-  res.send({
+  res.set('Content-Type', 'application/x-pem-file');
+  const pub_key = getPublicKeyPem();
+  return res.send({
     data: { pub_key },
     err: null,
     message: 'success',
     code: 200
   })
-  return
 })
 
 router.post('/login', (req, res) => {
-  const { username, password } = privateDecrypto(req.body.encrypted)
-  if(username === 'admin' && password === 'admin') {
-    const token = generateToken(username)
-    res.send({
-      data: token,
-      err: null,
-      message: 'success',
-      code: 200
-    })
-    return
-  }
+  try {
+    const { username, password } = decrypt(req.body)
+    res.set('Content-Type', 'application/json');
+    if(username === 'admin' && password === 'admin') {
+      const token = generateToken(username)
+      return res.json({
+        data: token,
+        err: null,
+        message: 'success',
+        code: 200
+      })
+    }
 
-  res.send({
-    data: '',
-    err: '没有找到用户',
-    message: null,
-    code: 10034
-  })
+    return res.send({
+      data: '',
+      err: '没有找到用户',
+      message: null,
+      code: 10034
+    })
+  } catch (error) {
+    return res.send({
+      data: '',
+      err: error.message,
+      message: null,
+      code: 10035
+    })
+  }
 })
 
 module.exports = router

@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const multer = require('multer');
-const { query } = require('../utils/SQLPool')
+const dayjs = require('dayjs');
+const { query, insert } = require('../utils/SQLPool');
 
 // 获取环境变量
 require('dotenv').config();
@@ -17,9 +18,10 @@ const diskStorage = multer.diskStorage({
   }
 })
 const upload = multer({ storage: diskStorage })
-const uploadMiddleWare = upload.single('blog_md')
+const uploadMD = upload.single('md')
+const uploadImg = upload.single('image')
 
-router.post('/upload', uploadMiddleWare, (req, res) => {
+function uploadHandler(req, res) {
   if(req.errored) {
     return res.status(500).json({
       data: null,
@@ -35,13 +37,46 @@ router.post('/upload', uploadMiddleWare, (req, res) => {
       code: 200
     })
   }
-})
+}
+
+router.post('/upload', (req, res, next) => {
+  const { 'content-type': contentType } = req.headers
+  if (contentType.split('/')[0] === 'image') {
+    next('route')
+  } else {
+    next()
+  }
+}, uploadMD, uploadHandler)
+
+router.post('/upload', uploadImg, uploadHandler);
 
 router.get('/list', async (req, res) => {
   const { pageIndex = 1, pageSize = 20 } = req.query
   const offset = (Number(pageIndex) - 1) * Number(pageSize)
   const [results, fields] = await query('SELECT * FROM `article` LIMIT ?, ?', { offset, pageSize})
   return res.write(JSON.stringify(results))
+})
+
+router.post('/create', async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    const [result] = await insert('article', { id: 0, title, content, created_at: createdAt, updated_at: createdAt });
+    return res.json({
+      data: 'ok',
+      message: '博客创建成功',
+      error: null,
+      code: 200
+    })
+  } catch (e) {
+    console.error('新建博客失败：', e);
+    return res.status(500).json({
+      data: '',
+      err: '博客创建失败',
+      message: null,
+      code: 10002
+    })
+  }
 })
 
 module.exports = router

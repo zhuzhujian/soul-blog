@@ -27,12 +27,14 @@ async function query(sql, params) {
 
 async function insert(table, data) {
   try {
-    const keys = Object.keys(data).join(', ')
-    const placeholders = Object.keys(data).map(() => '?').join(', ')
+    const values = Object.entries(data).filter(([_, value]) => value !== undefined && value !== null)
+    const keys = values.map(([key]) => key).join(', ')
+    const placeholders = values.map(() => '?').join(', ')
     const sql = `INSERT INTO ${table} (${keys}) VALUES (${placeholders})`
-    return await query(sql, Object.values(data))
+    return await query(sql, values.map(([_, value]) => value))
   } catch (e) {
     console.error('插入数据失败:', e);
+    throw e;
   }
 }
 

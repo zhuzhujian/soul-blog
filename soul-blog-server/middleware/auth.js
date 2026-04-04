@@ -17,7 +17,7 @@ export function generateToken(username) {
 
 export function authenticateToken(req, res, next) {
   console.log(req.url)
-  if (["/v1/login", "/v1/getPubKey"].includes(req.url)) {
+  if (["/v1/login", "/v1/getPubKey", "/v1/common/download"].includes(req.url.split('?')[0])) {
     // 登录及获取密钥的时候不校验token
     return next();
   }

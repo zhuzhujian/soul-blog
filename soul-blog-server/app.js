@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(authenticateToken);
 app.use('/v1', authRouter);
 app.use('/v1/blog', blogRouter);
-app.use('v1/common', commonRouter);
+app.use('/v1/common', commonRouter);
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');

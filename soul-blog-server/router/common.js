@@ -6,7 +6,7 @@ const router = Router();
 router.get('/download', async (req, res) => {
   const { id } = req.query;
 
-  const [results] = await query('SELECT img_url, img_name FROM image_source WHERE id = ?', [id]);
+  const [results] = await query('SELECT img_url, img_name FROM image_source WHERE img_id = ?', [Buffer.from(id, 'hex')]);
   if(results.length === 0) {
     return res.status(404).json({
       data: null,

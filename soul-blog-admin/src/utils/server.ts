@@ -27,7 +27,7 @@ class ServerInstance {
 
     this.server.interceptors.response.use((response) => {
       if(response.status === 200 && response.config.url === '/api/v1/login') {
-        const token = response.data.data;
+        const token = response.data.data || null;
         this.autoStore.setXAuthToken(token);
         const redirect = window.$router.currentRoute.value.query.redirect as string || '/home';
         window.$router.replace(redirect) // 登录成功后跳转到之前访问页或者首页

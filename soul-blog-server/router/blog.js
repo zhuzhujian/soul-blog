@@ -1,25 +1,107 @@
-const { Router } = require('express');
-const multer = require('multer');
-const dayjs = require('dayjs');
-const { query, insert } = require('../utils/SQLPool');
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { Router } from 'express';
+import multer from 'multer';
+import dayjs from 'dayjs';
+import { query, insert, remove } from '../utils/SQLPool.js';
 
-// 获取环境变量
-require('dotenv').config();
 
 const router = Router();
-const diskStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(new Error('上传失败'), process.env.UPLOAD_DESTINATION)
+const markdownStorage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    try {
+      const dirPath = process.env.UPLOAD_DESTINATION + '/markdown'
+      // const fileType = await fileTypeFromBuffer(file.buffer);
+      fs.existsSync(dirPath) || fs.mkdirSync(dirPath, { recursive: true });
+      cb(null, dirPath)
+    } catch(e) {
+      console.error('获取上传目录失败:', e);
+      cb(e, null);
+    }
   },
-  filename: (req, file, cb) => {
-    const ext = file.originalname.split('.').pop();
-    const filename = `${req.file}-${Math.random() * 1E9}.${ext}`;
-    cb(new Error('上传失败'), filename);
+  filename: async (req, file, cb) => {
+    try {
+      const ext = file.originalname.split('.').pop();
+      const filename = `${file.originalname.split('.')[0]}-${Math.random() * 1E9}.${ext}`;
+      cb(null, filename);
+      const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      const uuid = Buffer.from(crypto.randomUUID().replace(/-/g, ''), 'hex');
+      await insert(
+      'article',
+      {
+        id: 0,
+        title:filename,
+        content: path.resolve(process.env.UPLOAD_DESTINATION + '/markdown', filename),
+        type: 4, // 0-上传 1-创建 2-AI生成 4-原创 8-转载 16-翻译
+        status: 2, // 0-私密 1-公开 2-草稿 4-发布 8-下线
+        article_id: uuid,
+        create_at: createdAt,
+        update_at: createdAt
+      }
+    );
+    } catch(e) {
+      console.error('生成文件名失败:', e);
+      cb(e, null);
+    }
   }
 })
-const upload = multer({ storage: diskStorage })
-const uploadMD = upload.single('md')
-const uploadImg = upload.single('image')
+
+const imageStorage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    try {
+      const dirPath = process.env.UPLOAD_DESTINATION + '/images'
+      // const fileType = await fileTypeFromBuffer(file.buffer);
+      fs.existsSync(dirPath) || fs.mkdirSync(dirPath, { recursive: true });
+      cb(null, dirPath)
+    } catch(e) {
+      console.error('获取上传目录失败:', e);
+      cb(e, null);
+    }
+  },
+  filename: async (req, file, cb) => {
+    try {
+      const ext = file.originalname.split('.').pop();
+      const filename = `${file.originalname.split('.')[0]}-${Math.random() * 1E9}.${ext}`;
+      const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      const uuid = Buffer.from(crypto.randomUUID().replace(/-/g, ''), 'hex');
+      
+      // 在 filename 回调中初始化 customData
+      if (!req.customData) {
+        req.customData = {};
+      }
+      
+      await insert(
+        'image_source',
+        {
+          id: 0,
+          img_url: path.resolve(process.env.UPLOAD_DESTINATION + '/images', filename),
+          img_name: filename,
+          img_type: ext,
+          img_size: file.size || 0,
+          create_at: createdAt,
+          update_at: createdAt,
+          img_id: uuid
+        }
+      );
+      
+      // 存储 uuid 到 customData，便于后续在响应中使用
+      req.customData.imageUuid = uuid;
+      req.customData.type = 'image';
+      
+      cb(null, filename);
+    } catch(e) {
+      console.error('生成文件名失败:', e);
+      cb(e, null);
+    }
+  }
+})
+
+const upload = multer({ storage: markdownStorage })
+const uploadFile = upload.single('file')
+
+const uploadImage = multer({ storage: imageStorage })
+const uploadImageFile = uploadImage.single('file')
 
 function uploadHandler(req, res) {
   if(req.errored) {
@@ -30,8 +112,14 @@ function uploadHandler(req, res) {
       code: 10001
     })
   } else {
+    let data = 'ok'
+    if(req.customData?.type === 'image') {
+      data = {
+        image_resource: '/common/download?image_id=' + req.customData.imageUuid.toString('hex')
+      }
+    }
     return res.json({
-      data: null,
+      data,
       message: '上传成功',
       error: null,
       code: 200
@@ -39,29 +127,56 @@ function uploadHandler(req, res) {
   }
 }
 
-router.post('/upload', (req, res, next) => {
-  const { 'content-type': contentType } = req.headers
-  if (contentType.split('/')[0] === 'image') {
-    next('route')
-  } else {
-    next()
+router.post('/upload', uploadFile,uploadHandler)
+
+router.post('/uploadImage', uploadImageFile, uploadHandler)
+
+router.post('/list', async (req, res) => {
+  try {
+    const { pageIndex = 1, pageSize = 20 } = req.query
+    const offset = (Number(pageIndex) - 1) * Number(pageSize)
+    const [results, fields] = await query('SELECT * FROM `article` LIMIT ?, ?', { offset, pageSize})
+    const [countResults] = await query('SELECT COUNT(*) as count FROM `article`', [])
+    return res.json({
+      data: {
+        result: results,
+        total: countResults[0].count,
+        currentPage: Number(pageIndex),
+        pageSize: Number(pageSize)
+      },
+      message: '查询成功',
+      error: null,
+      code: 200
+    })
+  } catch(e) {
+    console.error('查询博客列表失败：', e);
+    return res.status(500).json({
+      data: null,
+      message: '查询博客列表失败',
+      error: e.message,
+      code: 10001
+    })
   }
-}, uploadMD, uploadHandler)
-
-router.post('/upload', uploadImg, uploadHandler);
-
-router.get('/list', async (req, res) => {
-  const { pageIndex = 1, pageSize = 20 } = req.query
-  const offset = (Number(pageIndex) - 1) * Number(pageSize)
-  const [results, fields] = await query('SELECT * FROM `article` LIMIT ?, ?', { offset, pageSize})
-  return res.write(JSON.stringify(results))
 })
 
 router.post('/create', async (req, res) => {
   try {
     const { title, content } = req.body;
     const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
-    const [result] = await insert('article', { id: 0, title, content, created_at: createdAt, updated_at: createdAt });
+    const uuid = Buffer.from(crypto.randomUUID().replace(/-/g, ''), 'hex');
+    const [result] = await insert(
+      'article',
+      {
+        id: 0,
+        title,
+        content,
+        type: 5, // 0-上传 1-创建 2-AI生成 4-原创 8-转载 16-翻译
+        status: 2, // 0-私密 1-公开 2-草稿 4-发布 8-下线
+        article_id: uuid,
+        create_at: createdAt,
+        update_at: createdAt
+      }
+    );
     return res.json({
       data: 'ok',
       message: '博客创建成功',
@@ -79,4 +194,25 @@ router.post('/create', async (req, res) => {
   }
 })
 
-module.exports = router
+router.post('/delete', async (req, res) => {
+  try {
+    const { id } = req.body;
+    const [result] = await remove('article', { id })
+    return res.json({
+      data: 'ok',
+      message: '博客删除成功',
+      error: null,
+      code: 200
+    })
+  } catch(e) {
+    console.error('删除博客失败：', e);
+    return res.status(500).json({
+      data: '',
+      err: '博客删除失败',
+      message: null,
+      code: 10003
+    })
+  }
+})
+
+export default router;

@@ -1,0 +1,40 @@
+import e, { Router } from 'express';
+import { query } from '../utils/SQLPool.js';
+
+const router = Router();
+
+router.get('/download', async (req, res) => {
+  const { id } = req.query;
+
+  const [results] = await query('SELECT img_url, img_name FROM image_source WHERE id = ?', [id]);
+  if(results.length === 0) {
+    return res.status(404).json({
+      data: null,
+      message: '图片不存在',
+      error: null,
+      code: 10002
+    })
+  }
+
+  const { img_url, img_name } = results[0];
+  res.download(
+    img_url,
+    img_name,
+    {
+      root: '/',
+      'headers': { 'content-type': 'application/octet-stream' }
+    },
+    (err) => {
+      if (!err) return; // file sent
+      res.statusCode = 404;
+      res.json({
+        data: null,
+        message: '图片不存在',
+        error: null,
+        code: 10002
+      })
+    }
+  )
+})
+
+export default router;

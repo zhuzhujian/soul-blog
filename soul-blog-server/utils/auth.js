@@ -1,12 +1,15 @@
-const fs = require('node:fs')
-const crypto = require('node:crypto')
-const path = require('node:path')
-const { JSEncrypt } = require('jsencrypt')
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // RSA 密钥存储路径
-const KEYS_DIR = path.join(__dirname, '../keys')
-const PUBLIC_KEY_PATH = path.join(KEYS_DIR, 'public.pem')
-const PRIVATE_KEY_PATH = path.join(KEYS_DIR, 'private.pem')
+const KEYS_DIR = path.join(__dirname, '../keys');
+const PUBLIC_KEY_PATH = path.join(KEYS_DIR, 'public.pem');
+const PRIVATE_KEY_PATH = path.join(KEYS_DIR, 'private.pem');
 
 /**
  * 生成RSA密钥对（2048位）
@@ -98,10 +101,10 @@ function decrypt(encryptedData) {
   }
 }
 
-module.exports = {
+export {
   generateKeyPair,
   initializeKeys,
   getPublicKeyPem,
   getPrivateKeyPem,
   decrypt
-}
+};

@@ -1,6 +1,6 @@
 // @ts-nocheck
-const jwt = require("jsonwebtoken");
-const { getPrivateKeyPem } = require("../keys");
+import jwt from 'jsonwebtoken';
+import { getPrivateKeyPem } from '../keys/index.js';
 
 const secet = getPrivateKeyPem();
 
@@ -10,12 +10,12 @@ const option = {
   algorithm: "PS256",
 };
 
-function generateToken(user) {
-  const payload = { username: user.username };
+export function generateToken(username) {
+  const payload = { username };
   return jwt.sign(payload, secet, option);
 }
 
-function authenticateToken(req, res, next) {
+export function authenticateToken(req, res, next) {
   console.log(req.url)
   if (["/v1/login", "/v1/getPubKey"].includes(req.url)) {
     // 登录及获取密钥的时候不校验token
@@ -26,7 +26,14 @@ function authenticateToken(req, res, next) {
   if (authHeader) {
     const token = authHeader.split(" ")[1]; // 获取Bearer后面的token值
     try {
-      const decode = jwt.verify(token, secet); // 使用密钥校验
+      const decoded = jwt.verify(token, secet); // 使用密钥校验
+      if(decoded.exp * 1000 < Date.now()) {
+        return res.status(401).json({
+          message: "Unauthorization: Token Expired",
+          data: null,
+          code: 10036
+        });
+      }
       res.user = decoded;
       next();
     } catch (e) {
@@ -40,8 +47,3 @@ function authenticateToken(req, res, next) {
       .json({ message: "Unauthrization: No Token Provide" });
   }
 }
-
-module.exports = {
-  generateToken,
-  authenticateToken,
-};

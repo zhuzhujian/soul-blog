@@ -1,7 +1,11 @@
 // @ts-nocheck
-const fs = require('node:fs')
-const crypto = require('node:crypto')
-const path = require('node:path')
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const createKey = () => {
   // 生成RSA密钥对
@@ -84,8 +88,8 @@ function privateDecrypto(encrypto) {
   return JSON.parse(decryptedBuffer.toString('utf-8'))
 }
 
-module.exports = {
+export {
   getPubKeyPem,
   getPrivateKeyPem,
   privateDecrypto
-}
+};

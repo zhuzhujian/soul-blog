@@ -1,10 +1,14 @@
-const path = require('node:path')
-const { existsSync, writeFileSync, readFileSync } = require('node:fs')
-const { scryptSync, createCipheriv, randomFillSync, createDecipheriv } = require('node:crypto');
+import path from 'node:path';
+import { existsSync, writeFileSync, readFileSync } from 'node:fs';
+import { scryptSync, createCipheriv, randomFillSync, createDecipheriv } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const algorithm = 'aes-256-ctr';
 const salt = 'soul_salt';
-const password = 'soul_password'
+const password = 'soul_password';
 
 function initSecretKey() {
   const key = scryptSync(password, salt, 32)
@@ -41,7 +45,7 @@ function decrypt(cryptMap) {
   return content.toString()
 }
 
-module.exports = {
+export {
   encrypt,
   decrypt
-}
+};

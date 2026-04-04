@@ -1,20 +1,24 @@
-require('dotenv').config();
-const mysql = require('mysql2/promise')
+import mysql from 'mysql2/promise';
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0
-})
+let pool;
+
+function initialPool() {
+  pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
+  });
+};
 
 async function query(sql, params) {
   let connection;
   try {
+    if(!pool) initialPool();
     connection = await pool.getConnection();
     const [results, fields] = await connection.execute(sql, params);
     return [results, fields];
@@ -53,7 +57,7 @@ async function remove(table, condition, isSoftDelete = true) {
   try {
     const whereClause = Object.keys(condition).map(key => `${key} = ?`).join(' AND ')
     if (isSoftDelete) {
-      const sql = `UPDATE ${table} SET deleted = 1 WHERE ${whereClause}`;
+      const sql = `UPDATE ${table} SET is_deleted = 1 WHERE ${whereClause}`;
       return await query(sql, Object.values(condition));
     } else {
       const sql = `DELETE FROM ${table} WHERE ${whereClause}`;
@@ -64,9 +68,9 @@ async function remove(table, condition, isSoftDelete = true) {
   }
 }
 
-module.exports = {
+export {
   query,
   insert,
   updata,
   remove
-}
+};

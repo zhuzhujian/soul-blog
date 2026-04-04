@@ -1,8 +1,8 @@
-const express = require('express')
-const { generateToken } = require('../middleware/auth')
-const { decrypt, getPublicKeyPem } = require('../utils/auth')
+import express from 'express';
+import { generateToken } from '../middleware/auth.js';
+import { decrypt, getPublicKeyPem } from '../utils/auth.js';
 
-const router = express.Router()
+const router = express.Router();
 
 router.get('/getPubKey', (req, res) => {
   res.set('Content-Type', 'application/x-pem-file');
@@ -21,6 +21,7 @@ router.post('/login', (req, res) => {
     res.set('Content-Type', 'application/json');
     if(username === 'admin' && password === 'admin') {
       const token = generateToken(username)
+      res.cookie('x-auth-token', token, { sameSite: 'lax', path: '/'})
       return res.json({
         data: token,
         err: null,
@@ -45,4 +46,4 @@ router.post('/login', (req, res) => {
   }
 })
 
-module.exports = router
+export default router;

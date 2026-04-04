@@ -19,6 +19,25 @@ failure:
   message: '博客创建失败'
   code: 10002
 ```
+- 更新
+```yaml
+url: '/v1/blog/updata'
+method: POST
+params:
+  title: string
+  content: string
+  status: string
+response:
+  data: 'ok'
+  message: '博客更新成功'
+  error: null
+  code: 200
+failure: 
+  data: ''
+  err: null
+  message: '博客更新失败'
+  code: 10002
+```
 - 查询
 ```yaml
 url: '/v1/blog/list'

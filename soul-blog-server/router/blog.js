@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import multer from 'multer';
 import dayjs from 'dayjs';
-import { query, insert, remove } from '../utils/SQLPool.js';
+import { query, insert, remove, updata } from '../utils/SQLPool.js';
 
 
 const router = Router();
@@ -115,7 +115,7 @@ function uploadHandler(req, res) {
     let data = 'ok'
     if(req.customData?.type === 'image') {
       data = {
-        image_resource: '/common/download?image_id=' + req.customData.imageUuid.toString('hex')
+        resourceUrl: 'http://localhost:3000/v1/common/download?image_id=' + req.customData.imageUuid.toString('hex')
       }
     }
     return res.json({
@@ -211,6 +211,27 @@ router.post('/delete', async (req, res) => {
       err: '博客删除失败',
       message: null,
       code: 10003
+    })
+  }
+})
+
+router.post('update', async (req, res) => {
+  const { id, title, content, status } = req.body;
+  try {
+    const [result] = await updata('article', { title, content, status, update_at: dayjs().format('YYYY-MM-DD HH:mm:ss') }, { id })
+    return res.json({
+      data: 'ok',
+      message: '博客更新成功',
+      error: null,
+      code: 200
+    })
+  } catch(e) {
+    console.error('更新博客失败：', e);
+    return res.status(500).json({
+      data: '',
+      err: '博客更新失败',
+      message: null,
+      code: 10004
     })
   }
 })

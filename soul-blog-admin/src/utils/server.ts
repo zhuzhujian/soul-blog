@@ -3,7 +3,10 @@ import { useAuthStore } from "@/store/modules/auth";
 
 class ServerInstance {
   private server: AxiosInstance;
-  private whiteList: string[] = ['/api/v1/login', '/api/v1/getPubKey'];
+  private whiteList: string[] = [
+    '/api/v1/login', 
+    '/api/v1/getPubKey',
+  ];
   private autoStore:any;
 
   constructor() {

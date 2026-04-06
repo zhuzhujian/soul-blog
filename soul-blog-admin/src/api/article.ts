@@ -4,43 +4,46 @@ import type { IResult } from '@/types/common'
 export interface ArticleListItem {
   id: number
   title: string
-  category: string
-  tags: string
+  category?: string
+  tags?: string
+  content?: string
   cover?: string
   summary?: string
-  isTop: boolean
-  isPublished: boolean
-  createTime: string
-  updateTime: string
+  isTop?: boolean
+  isPublished?: boolean
+  createTime?: string
+  updateTime?: string
 }
 
 export interface ArticleQuery {
-  title?: string
-  category?: string
-  isRecommend?: boolean
-  status?: 'published' | 'draft'
-  page?: number
-  pageSize?: number
+  pageSize: number
+  pageIndex: number
 }
 
 export interface ArticleListResult {
-  list: ArticleListItem[]
+  result: ArticleListItem[]
   total: number
-  page: number
+  currentPage: number
   pageSize: number
 }
 
 export async function getArticleList(params: ArticleQuery): Promise<IResult<ArticleListResult>> {
-  // :todo 获取文章列表 API
-  return fetch.get('/api/v1/articles', { params })
+  return fetch.post('/api/v1/blog/list', params)
 }
 
 export async function deleteArticle(id: number): Promise<IResult<any>> {
-  // :todo 删除文章 API
-  return fetch.post(`/api/v1/articles/${id}/delete`, {}, undefined)
+  return fetch.post('/api/v1/blog/delete', { id })
 }
 
-export async function deleteArticles(ids: number[]): Promise<IResult<any>> {
-  // :todo 批量删除文章 API
-  return fetch.post('/api/v1/articles/batch-delete', { ids }, undefined)
+export async function createArticle(data: Partial<ArticleListItem>): Promise<IResult<any>> {
+  return fetch.post('/api/v1/blog/create', data)
+}
+
+export async function updateArticle(data: Partial<ArticleListItem> & { id: number }): Promise<IResult<any>> {
+  return fetch.post('/api/v1/blog/update', data)
+}
+
+export async function getArticleDetail(id: number): Promise<IResult<ArticleListItem>> {
+  // :todo 获取文章详情 API
+  return fetch.post('/api/v1/blog/detail', { id })
 }

@@ -1,13 +1,19 @@
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
+import server from '@/utils/server'
+import { createArticle, getArticleDetail, updateArticle } from '@/api/article'
+
+const route = useRoute()
 
 interface ArticleForm {
   title: string
   category: string
   tags: string
   content: string
+  id?: number
 }
 
 const form = reactive<ArticleForm>({
@@ -25,7 +31,23 @@ const categories = ref([
 
 const loading = ref(false)
 
-const handlePublish = () => {
+onMounted(async () => {
+  const id = route.query.id
+  if (id) {
+    try {
+      const res = await getArticleDetail(Number(id)) as any
+      if (res.data) {
+        form.id = res.data.id
+        form.title = res.data.title
+        form.content = res.data.content || ''
+      }
+    } catch (e) {
+      console.error('获取文章详情失败:', e)
+    }
+  }
+})
+
+const handlePublish = async () => {
   if (!form.title.trim()) {
     ;(window as any).$message.warning('请输入文章标题')
     return
@@ -36,11 +58,27 @@ const handlePublish = () => {
   }
   
   loading.value = true
-  console.log('发布文章:', form)
-  setTimeout(() => {
-    ;(window as any).$message.success('发布成功')
+  try {
+    if (form.id) {
+      await updateArticle({
+        id: form.id,
+        title: form.title,
+        content: form.content
+      } as any)
+      ;(window as any).$message.success('更新成功')
+    } else {
+      await createArticle({
+        title: form.title,
+        content: form.content
+      } as any)
+      ;(window as any).$message.success('发布成功')
+    }
+  } catch (e) {
+    console.error('发布失败:', e)
+    ;(window as any).$message.error('发布失败')
+  } finally {
     loading.value = false
-  }, 1000)
+  }
 }
 
 const handleSave = () => {
@@ -58,19 +96,15 @@ const handleSave = () => {
 }
 
 const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
-  // :todo 上传markdown图片到服务器
   const urls: string[] = await Promise.all(
     files.map(async (file) => {
       const formData = new FormData()
       formData.append('file', file)
       
       try {
-        const res = await fetch('/api/v1/upload', {
-          method: 'POST',
-          body: formData
-        })
-        const data = await res.json()
-        return data.data?.url || URL.createObjectURL(file)
+        const res = await server.post('/api/v1/blog/uploadImage', formData) as any
+        console.log('图片上传结果:', res)
+        return res.data?.sourceUrl || URL.createObjectURL(file)
       } catch (e) {
         console.error('图片上传失败:', e)
         return URL.createObjectURL(file)

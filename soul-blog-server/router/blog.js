@@ -135,7 +135,7 @@ router.post('/list', async (req, res) => {
   try {
     const { pageIndex = 1, pageSize = 20 } = req.query
     const offset = (Number(pageIndex) - 1) * Number(pageSize)
-    const [results, fields] = await query('SELECT * FROM `article` LIMIT ?, ?', { offset, pageSize})
+    const [results, fields] = await query('SELECT * FROM `article` WHERE is_delete = 0 LIMIT ?, ?', { offset, pageSize})
     const [countResults] = await query('SELECT COUNT(*) as count FROM `article`', [])
     return res.json({
       data: {

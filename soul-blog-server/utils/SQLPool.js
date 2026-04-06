@@ -57,7 +57,7 @@ async function remove(table, condition, isSoftDelete = true) {
   try {
     const whereClause = Object.keys(condition).map(key => `${key} = ?`).join(' AND ')
     if (isSoftDelete) {
-      const sql = `UPDATE ${table} SET is_deleted = 1 WHERE ${whereClause}`;
+      const sql = `UPDATE ${table} SET is_delete = 1 WHERE ${whereClause}`;
       return await query(sql, Object.values(condition));
     } else {
       const sql = `DELETE FROM ${table} WHERE ${whereClause}`;

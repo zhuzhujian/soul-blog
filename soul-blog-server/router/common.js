@@ -4,9 +4,13 @@ import { query } from '../utils/SQLPool.js';
 const router = Router();
 
 router.get('/download', async (req, res) => {
-  const { id } = req.query;
+  const imageId = req.query.image_id
+  if (!imageId || typeof imageId !== 'string') {
+    return res.status(400).json({ data: null, message: '缺少image_id', code: 400 })
+  }
 
-  const [results] = await query('SELECT img_url, img_name FROM image_source WHERE img_id = ?', [Buffer.from(id, 'hex')]);
+  const [results] = await query('SELECT img_url, img_name FROM image_source WHERE img_id = ?', [Buffer.from(imageId, 'hex')]);
+  
   if(results.length === 0) {
     return res.status(404).json({
       data: null,

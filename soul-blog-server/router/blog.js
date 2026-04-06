@@ -166,35 +166,6 @@ router.post('/detail', async (req, res) => {
   }
 })
 
-router.post('/update', async (req, res) => {
-  try {
-    const { id, title, content } = req.body
-    if (!id) {
-      return res.status(400).json({
-        data: null,
-        message: '缺少文章ID',
-        code: 10005
-      })
-    }
-    const updateAt = dayjs().format('YYYY-MM-DD HH:mm:ss')
-    await query(`UPDATE article SET title = ?, content = ?, update_at = ? WHERE id = ?`, [title, content, updateAt, id])
-    return res.json({
-      data: 'ok',
-      message: '更新成功',
-      error: null,
-      code: 200
-    })
-  } catch(e) {
-    console.error('更新文章失败：', e);
-    return res.status(500).json({
-      data: null,
-      message: '更新文章失败',
-      error: e.message,
-      code: 10005
-    })
-  }
-})
-
 router.post('/list', async (req, res) => {
   try {
     const pageIndex = Number(req.body?.pageIndex) || 1
@@ -287,10 +258,15 @@ router.post('/delete', async (req, res) => {
   }
 })
 
-router.post('update', async (req, res) => {
+router.post('/update', async (req, res) => {
   const { id, title, content, status } = req.body;
   try {
-    const [result] = await updata('article', { title, content, status, update_at: dayjs().format('YYYY-MM-DD HH:mm:ss') }, { id })
+    const updateData = { update_at: dayjs().format('YYYY-MM-DD HH:mm:ss') }
+    if (title !== undefined) updateData.title = title
+    if (content !== undefined) updateData.content = content
+    if (status !== undefined) updateData.status = status
+    
+    const [result] = await updata('article', updateData, { id })
     return res.json({
       data: 'ok',
       message: '博客更新成功',

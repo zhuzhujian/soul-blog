@@ -24,8 +24,8 @@ const handleNavigate = (item: { name: string; path: string }) => {
   >
     <template v-for="parent in adminMenuRoutes" :key="parent.name">
       <el-menu-item
-        v-if="!parent.children.filter((c: any) => !c.hidden).length"
-        :index="parent.children[0].path || parent.path"
+        v-if="!parent?.children?.filter((c: any) => !c.hidden).length"
+        :index="parent?.children?.[0].path || parent.path"
         @click="handleNavigate(parent)"
       >
         <template #title>

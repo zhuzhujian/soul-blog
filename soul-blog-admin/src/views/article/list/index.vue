@@ -2,7 +2,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import { getArticleList, deleteArticle, type ArticleListItem, type ArticleQuery } from '@/api/article'
+import { getArticleList, deleteArticle } from '@/api/article'
+import type { ArticleListItem } from '@/api/article'
 
 const router = useRouter()
 

@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "dev:admin": "pnpm run -F @soul-blog/admin dev",
-    "start:server": "pnpm run -F @soul-blog/server start"
+    "start:server": "pnpm run -F @soul-blog/server start",
+    "build:admin": "pnpm run -F @soul-blog/admin build"
   },
   "keywords": [],
   "author": "",

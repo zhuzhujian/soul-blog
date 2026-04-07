@@ -21,6 +21,6 @@ app.use('/v1', authRouter);
 app.use('/v1/blog', blogRouter);
 app.use('/v1/common', commonRouter);
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.listen(process.env.EXPRESS_APP_PROT, () => {
+    console.log(`Server is running on port ${process.env.EXPRESS_APP_PROT}`);
 });

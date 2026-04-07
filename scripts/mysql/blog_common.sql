@@ -16,7 +16,7 @@ CREATE TABLE `article` (
   `type` TINYINT NULL DEFAULT NULL COMMENT '类型（0-上传 1-创建 2-AI生成 4-原创 8-转载 16-翻译）',
   `status` TINYINT NULL DEFAULT NULL COMMENT '状态（0-私密 1-公开 2-草稿 4-发布 8-下线）',
   `is_top` TINYINT(1) NULL DEFAULT NULL,
-  `is_delete` TINYINT(1) NULL DEFAULT NULL COMMENT '软删标识',
+  `is_deleted` TINYINT(1) NULL DEFAULT NULL COMMENT '软删标识',
   `create_at` datetime(3) NULL DEFAULT NULL,
   `update_at` datetime(3) NULL DEFAULT NULL,
   `original_url` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '转载原地址',

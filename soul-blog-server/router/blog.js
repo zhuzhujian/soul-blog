@@ -171,8 +171,8 @@ router.post('/list', async (req, res) => {
     const pageIndex = Number(req.body?.pageIndex) || 1
     const pageSize = Number(req.body?.pageSize) || 10
     const offset = (pageIndex - 1) * pageSize
-    const [results, fields] = await query(`SELECT * FROM article WHERE is_delete = 0 LIMIT ?, ?`, [offset, pageSize])
-    const [countResults] = await query('SELECT COUNT(*) as count FROM article WHERE is_delete = 0')
+    const [results, fields] = await query(`SELECT * FROM article WHERE is_deleted != 1 LIMIT ?, ?`, [offset, pageSize])
+    const [countResults] = await query('SELECT COUNT(*) as count FROM article WHERE is_deleted = 0')
     return res.json({
       data: {
         result: results,
@@ -206,7 +206,7 @@ router.post('/create', async (req, res) => {
         id: 0,
         title,
         content,
-        is_delete: 0,
+        is_deleted: 0,
         type: 5, // 0-上传 1-创建 2-AI生成 4-原创 8-转载 16-翻译
         status: 2, // 0-私密 1-公开 2-草稿 4-发布 8-下线
         article_id: uuid,

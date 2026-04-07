@@ -91,7 +91,6 @@ const handleSave = () => {
     return
   }
   
-  console.log('保存草稿:', form)
   ;(window as any).$message.info('已保存为草稿')
 }
 
@@ -103,7 +102,6 @@ const onUploadImg = async (files: File[], callback: (urls: string[]) => void) =>
       
       try {
         const res = await server.post('/api/v1/blog/uploadImage', formData) as any
-        console.log('图片上传结果:', JSON.stringify(res))
         return res.data?.resourceUrl
       } catch (e) {
         console.error('图片上传失败:', e)
@@ -111,7 +109,6 @@ const onUploadImg = async (files: File[], callback: (urls: string[]) => void) =>
       }
     })
   )
-  console.log('上传后的URL列表:', urls)
   callback(urls)
 }
 </script>

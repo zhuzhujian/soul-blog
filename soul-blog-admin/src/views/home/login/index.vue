@@ -18,8 +18,7 @@ const handleLogin = async () => {
   const encryptInfo = await encrypt(toRaw(userInfo))
   if(encryptInfo) {
     try {
-      const res = await login(encryptInfo);
-      console.log(res);
+      await login(encryptInfo);
     } catch(e) {
       loading.value = false;
     }

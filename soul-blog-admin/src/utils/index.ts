@@ -28,7 +28,6 @@ export async function getRsaKey() {
   if(['', undefined, null].includes(secretKey)) {
     try {
       const res = await getPubKey();
-      console.log(res)
       if(res.code !== 200) {
         throw new Error('获取密钥失败！');
       }

@@ -1,9 +1,13 @@
 import type { App } from "vue";
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import { setupRouterGuard } from "./guard";
 import { adminMenuRoutes } from './routes';
 
 const basicRoutes = [
+  {
+    path: "/:pathMath(.*)",
+    redirect: '/login'
+  },
   {
     name: "Login",
     path: "/login",
@@ -16,7 +20,7 @@ const basicRoutes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: [...basicRoutes, ...adminMenuRoutes],
 });
 

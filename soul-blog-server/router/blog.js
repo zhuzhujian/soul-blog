@@ -115,7 +115,7 @@ function uploadHandler(req, res) {
     let data = 'ok'
     if(req.customData?.type === 'image') {
       data = {
-        resourceUrl: 'http://localhost:3000/v1/common/download?image_id=' + req.customData.imageUuid.toString('hex')
+        resourceUrl: '/api/v1/common/download?image_id=' + req.customData.imageUuid.toString('hex')
       }
     }
     return res.json({
